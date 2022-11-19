@@ -48,12 +48,14 @@ def A_Star(startState: State, goalStateTiles):
 
     frontier.append(startState)
 
+    createdNode = 1
+    maxDepth = 0
 
     while len(frontier) > 0:
         currentState = frontier.pop(0)
 
         if currentState.tiles == goalStateTiles:
-            return solution(currentState)
+            return solution(currentState), createdNode, maxDepth
 
         willAddExp = True
         for state in explored:
@@ -72,6 +74,10 @@ def A_Star(startState: State, goalStateTiles):
                     willAdd = False
                     break
             if willAdd:
-                frontier.append(createState(tiles, currentState, goalStateTiles))
+                createdNode += 1
+                newState = createState(tiles, currentState, goalStateTiles)
+                if newState.cost > maxDepth:
+                    maxDepth = newState.cost
+                frontier.append(newState)
         frontier = arrangeFrontier(frontier)
     return -1

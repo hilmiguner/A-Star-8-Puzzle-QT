@@ -12,15 +12,45 @@ class myWindow(QtWidgets.QMainWindow):
         self.uiManager = Ui_MainWindow()
         self.uiManager.setupUi(self)
 
-        widget = QtWidgets.QWidget()
-        layout = QtWidgets.QHBoxLayout()
+        self.uiManager.btn_Start.clicked.connect(self.action_btn_StartClicked)
 
-        startStateTiles = [[1, 7, 6], [8, 3, 4], [5, 2, None]]
-        goalStateTiles = [[1, 2, 3], [4, 5, 6], [7, 8, None]]
+    def action_btn_StartClicked(self):
+        self.uiManager.btn_Start.setEnabled(False)
+        self.uiManager.gridLayout.setEnabled(False)
+        self.uiManager.gridLayout_2.setEnabled(False)
+
+        verticalLayout = QtWidgets.QVBoxLayout()
+        horizontalLayout = QtWidgets.QHBoxLayout()
+        widget = QtWidgets.QWidget()
+
+        startStateTiles = [[], [], []]
+        goalStateTiles = [[], [], []]
+
+        for x in range(3):
+            for y in range(3):
+                text = self.uiManager.gridLayout.itemAtPosition(x, y).widget().currentText()
+                if text == "None":
+                    text = None
+                else:
+                    text = int(text)
+                startStateTiles[x].append(text)
+
+        for x in range(3):
+            for y in range(3):
+                text = self.uiManager.gridLayout_2.itemAtPosition(x, y).widget().currentText()
+                if text == "None":
+                    text = None
+                else:
+                    text = int(text)
+                goalStateTiles[x].append(text)
+
         startState = createState(tiles=startStateTiles, parentState=None, goalTiles=goalStateTiles)
-        self.result = A_Star(startState=startState, goalStateTiles=goalStateTiles)
-        for ix, state in enumerate(self.result):
+        result, createdNode, maxDepth = A_Star(startState=startState, goalStateTiles=goalStateTiles)
+        for ix, state in enumerate(result):
+            if ix % 5 == 0:
+                horizontalLayout = QtWidgets.QHBoxLayout()
             stateWidget = QtWidgets.QWidget()
+            stateWidget.setFixedSize(120, 140)
             gridLayout = QtWidgets.QGridLayout()
             for i in range(3):
                 for j in range(3):
@@ -31,15 +61,29 @@ class myWindow(QtWidgets.QMainWindow):
                     label.setStyleSheet("""border:1px solid red;""")
 
                     labelCount = QtWidgets.QLabel()
+                    labelCount.setAlignment(Qt.AlignCenter)
+                    labelCount.setFixedSize(50, 30)
                     labelCount.setText(f"{ix}. step")
 
                     gridLayout.addWidget(label, i, j)
                     gridLayout.addWidget(labelCount, 3, 1)
-            stateWidget.setLayout(gridLayout)
-            layout.addWidget(stateWidget)
 
-        widget.setLayout(layout)
+            stateWidget.setLayout(gridLayout)
+            horizontalLayout.addWidget(stateWidget)
+            if ix % 5 == 0:
+                temp = QtWidgets.QWidget()
+                temp.setLayout(horizontalLayout)
+                verticalLayout.addWidget(temp)
+
+        widget.setLayout(verticalLayout)
         self.uiManager.scrollArea.setWidget(widget)
+
+        self.uiManager.label.setText(f"Total created node: {createdNode}")
+        self.uiManager.label_2.setText(f"Maximum depth: {maxDepth}")
+
+        self.uiManager.btn_Start.setEnabled(True)
+        self.uiManager.gridLayout.setEnabled(True)
+        self.uiManager.gridLayout_2.setEnabled(True)
 
 app = QtWidgets.QApplication(sys.argv)
 window = myWindow()
